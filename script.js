@@ -1,7 +1,16 @@
 // Use the API_URL variable to make fetch requests to the API.
 // Replace the placeholder with your cohort name (ex: 2109-UNF-HY-WEB-PT)
-const cohortName = "YOUR COHORT NAME HERE";
+const cohortName = "2501-FTB-ET-WEB-PT";
 const API_URL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}`;
+
+// ADDED AN OBJECT TO UPDATE AFTER EACH API CALL
+const state = {
+  allPlayers: [],
+  singlePlayer: {},
+}
+
+const newPlayerForm = document.querySelector("#new-player-form")
+const main = document.querySelector('main')
 
 /**
  * Fetches all players from the API.
@@ -9,6 +18,11 @@ const API_URL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}`;
  */
 const fetchAllPlayers = async () => {
   try {
+    const res = await fetch(`${API_URL}/players`)
+    const data = await res.json()
+
+    state.allPlayers = data.results
+    return state.allPlayers
     // TODO
   } catch (err) {
     console.error("Uh oh, trouble fetching players!", err);
@@ -23,6 +37,11 @@ const fetchAllPlayers = async () => {
 const fetchSinglePlayer = async (playerId) => {
   try {
     // TODO
+    const res = await fetch(`${API_URL}/players/${playerId}`);
+    const data = await res.json();
+
+    state.singlePlayer = data
+    return state.singlePlayer
   } catch (err) {
     console.error(`Oh no, trouble fetching player #${playerId}!`, err);
   }
@@ -35,26 +54,26 @@ const fetchSinglePlayer = async (playerId) => {
  */
 const addNewPlayer = async (playerObj) => {
   try {
-    // TODO
-  } catch (err) {
-    console.error("Oops, something went wrong with adding that player!", err);
-  }
-};
+        const res = await fetch(`${API_URL}/players`,{
+          method: "POST",
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            name: `${playerObj}.name`, 
+            breed: `${playerObj}.id`,
+            status: `${playerObj}.status`,
+            imageUrl: `${playerObj}.imageUrl`,
+            teamId: `${playerObj}.teamId`})
+        });
+        
+      }catch (err) {
+        console.error("Opops, something went wrong with that player!",err);
+      }}
 
 /**
  * Removes a player from the roster via the API.
  * @param {number} playerId the ID of the player to remove
  */
-const removePlayer = async (playerId) => {
-  try {
-    // TODO
-  } catch (err) {
-    console.error(
-      `Whoops, trouble removing player #${playerId} from the roster!`,
-      err
-    );
-  }
-};
+//GET THIS WHOLE SECTION PULLED AND RECOPIED FROM ORIGINAL - PROBLEM HEREconst removePlayer 
 
 /**
  * Updates `<main>` to display a list of all players.
@@ -76,8 +95,29 @@ const removePlayer = async (playerId) => {
  * @param {Object[]} playerList - an array of player objects
  */
 const renderAllPlayers = (playerList) => {
+  main.innerHTML = ""
   // TODO
+  if(Array.isArray(playerList)){
+    playerList.forEach((player) => {
+      const card = document.createElement("div")
+      card.classList.add("card")
+      card.innerHTML = `
+      <h1> ${player.name} </h1>
+      <p> Player ID: ${player.id} </p>
+      <img src="${player.imageUrl}" alt="${player.name}">
+      <button class=seeDetails" data=id=${player.id}> See Details </button>
+      <button class=removePlayer> Remove Player </button>
+      `
+      main.append(card)
+    } )
+    document.querySelectorAll(".seeDetails").forEach(button => {
+      addEventListener("click", (e) => (fetchSinglePlayer(e.target.getAttribute("data-id"))))
+    })
+  }else{
+    console.log("No players currently!")
+  }
 };
+
 
 /**
  * Updates `<main>` to display a single player.
@@ -119,7 +159,7 @@ const init = async () => {
   renderNewPlayerForm();
 };
 
-// This script will be run using Node when testing, so here we're doing a quick
+// This script will be run using Node when testing, so here we're doing a quick    removePlayer,    removePlayer,    removePlayer,
 // check to see if we're in Node or the browser, and exporting the functions
 // we want to test if we're in Node.
 if (typeof window === "undefined") {
