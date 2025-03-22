@@ -1,9 +1,9 @@
 // Use the API_URL variable to make fetch requests to the API.
 // Replace the placeholder with your cohort name (ex: 2109-UNF-HY-WEB-PT)
-const cohortName = "2501-FTB-ET-WEB-PT";
-const API_URL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}`;
+const cohortName = '2501-PUPPIES';
+const API_URL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/players`;
 
-// ADDED AN OBJECT TO UPDATE AFTER EACH API CALL
+// ADDED AN OBJECT TO UPDATE AFTER EACH API CALL IS MADE
 const state = {
   allPlayers: [],
   singlePlayer: {},
@@ -16,12 +16,14 @@ const main = document.querySelector('main')
  * Fetches all players from the API.
  * @returns {Object[]} the array of player objects
  */
-const fetchAllPlayers = async () => {
+const fetchAllPlayers = async()=> {
   try {
-    const res = await fetch(`${API_URL}/players`)
+    const res = await fetch(`${API_URL}`)
+    console.log(res)
     const data = await res.json()
+    console.log(data)
 
-    state.allPlayers = data.results
+    state.allPlayers = data.data.players;
     return state.allPlayers
     // TODO
   } catch (err) {
@@ -37,16 +39,18 @@ const fetchAllPlayers = async () => {
 const fetchSinglePlayer = async (playerId) => {
   try {
     // TODO
-    const res = await fetch(`${API_URL}/players/${playerId}`);
+    const res = await fetch(`${API_URL}/${playerId}`);
     const data = await res.json();
-
-    state.singlePlayer = data
+    
+    console.log(data.data.player)
+    state.singlePlayer = data.data.player
+  
     return state.singlePlayer
   } catch (err) {
     console.error(`Oh no, trouble fetching player #${playerId}!`, err);
   }
 };
-
+fetchSinglePlayer(29656)
 /**
  * Adds a new player to the roster via the API.
  * @param {Object} playerObj the player to add
@@ -54,7 +58,7 @@ const fetchSinglePlayer = async (playerId) => {
  */
 const addNewPlayer = async (playerObj) => {
   try {
-        const res = await fetch(`${API_URL}/players`,{
+        const res = await fetch(`${API_URL}`,{
           method: "POST",
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -73,7 +77,16 @@ const addNewPlayer = async (playerObj) => {
  * Removes a player from the roster via the API.
  * @param {number} playerId the ID of the player to remove
  */
-//GET THIS WHOLE SECTION PULLED AND RECOPIED FROM ORIGINAL - PROBLEM HEREconst removePlayer 
+const removePlayer = async (playerId) => {
+  try {
+    // TODO
+  } catch (err) {
+    console.error(
+      `Whoops, trouble removing player #${playerId} from the roster!`,
+      err
+    );
+  }
+};
 
 /**
  * Updates `<main>` to display a list of all players.
@@ -97,27 +110,50 @@ const addNewPlayer = async (playerObj) => {
 const renderAllPlayers = (playerList) => {
   main.innerHTML = ""
   // TODO
+  console.log(playerList)
   if(Array.isArray(playerList)){
     playerList.forEach((player) => {
-      const card = document.createElement("div")
-      card.classList.add("card")
+      const card = document.createElement('div')
+      card.classList.add('card')
       card.innerHTML = `
       <h1> ${player.name} </h1>
       <p> Player ID: ${player.id} </p>
       <img src="${player.imageUrl}" alt="${player.name}">
-      <button class=seeDetails" data=id=${player.id}> See Details </button>
-      <button class=removePlayer> Remove Player </button>
+      <button class="seeDetails" data-id=${player.id}> See Details </button>
+      <button class="removePlayer"> Remove Player </button>
       `
       main.append(card)
     } )
-    document.querySelectorAll(".seeDetails").forEach(button => {
-      addEventListener("click", (e) => (fetchSinglePlayer(e.target.getAttribute("data-id"))))
-    })
+    const buttons = document.querySelectorAll('.seeDetails')
+    buttons.forEach((button)=>{
+      button.addEventListener('click', async (e)=>{
+       renderAllPlayers (await fetchSinglePlayer(e.target.dataset.id))
+      })
+   })
   }else{
-    console.log("No players currently!")
-  }
-};
+    const card = document.createElement('div')
+    card.classList.add('card','single')
+    card.innerHTML = `
+    <img src="${playerList.imageUrl}" alt="${playerList.name}">
+      <h1>${playerList.name}</h1>
+      <p> ${playerList.id}</p>
+      <button class="getDetails" id="goBack"> Go Back </button>
+      <button class="removePlayer"> Remove Player </button>
+    `
+    main.replaceChildren(card)
 
+    const button = document.querySelector("#goBack")
+    button.addEventListener('click', ()=>{
+      renderAllPlayers (state.allPlayers)
+    })
+
+    const buttonFav = document.querySelector("#remove")
+    button.addEventListener('click', ()=>{
+      renderAllPlayers (state.allPlayers)
+    })
+
+  };
+}
 
 /**
  * Updates `<main>` to display a single player.
@@ -133,7 +169,7 @@ const renderAllPlayers = (playerList) => {
  * @param {Object} player an object representing a single player
  */
 const renderSinglePlayer = (player) => {
-  // TODO
+  // TODO -- DONE
 };
 
 /**
